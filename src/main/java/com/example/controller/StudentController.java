@@ -5,7 +5,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -119,12 +122,30 @@ public class StudentController
     
     @RequestMapping(value = "/student/update/submit", method = RequestMethod.POST)
     public String updateSubmit(@RequestParam(value = "npm", required = false) String npm,
-    		@RequestParam(value = "name", required = false) String name,
-    		@RequestParam(value = "gpa", required = false) Double gpa) {
+    		@RequestParam(value = "name", required = true) String name,
+    		@RequestParam(value = "gpa", required = true) Double gpa) {
     	StudentModel student = new StudentModel (npm, name, gpa);
         studentDAO.updateStudent(student);
 
         return "success-update";
     }
-
+    
+    @GetMapping("/student/updateForm/{npm}")
+    public String updateForm(Model model, @PathVariable(value = "npm") String npm) {
+    	StudentModel student = studentDAO.selectStudent(npm);
+    	
+    	if (student != null) {
+            model.addAttribute ("student", student);
+            return "form-update2";
+        } else {
+            model.addAttribute ("npm", npm);
+            return "not-found";
+        }
+    }
+    
+    @PostMapping("/student/updateForm/submit")
+    public String updateFormSubmit(@ModelAttribute StudentModel student) {
+    	studentDAO.updateStudent(student);
+    	return "success-update";
+    }
 }
